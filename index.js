@@ -11,7 +11,7 @@ const http = require("http");
 
 
 // for attendance daily
-require("./cronJobs"); // Ensures the cron job runs daily
+require("./services/cronJons"); // Ensures the cron job runs daily
 
 
 // creating an app
