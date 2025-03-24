@@ -21,7 +21,7 @@ const app = express();
 makeConnection("rfid").then( () => console.log("Connected to database") );
 
 // middlewares
-const allowedOrigins = ["https://your-vercel-app.vercel.app"];
+const allowedOrigins = ["https://rfid-frontend-gold.vercel.app"];
 
 app.use(cors({
     origin: (origin, callback) => {
