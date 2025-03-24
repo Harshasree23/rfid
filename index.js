@@ -57,8 +57,8 @@ require("./socket/socketHandler")(io);
 
 // routes
 const rfidRoutes = require("./routes/rfid")(io);
-app.use('/' , baseRouter );
 app.use('/scan' , rfidRoutes);
+app.use('/' , baseRouter );
 
 // port
 portfinder.basePort = 3000;
