@@ -1,8 +1,8 @@
 const logout = (req, res) => {
     try {
         // Clear authentication cookies
-        res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "Strict" });
-        res.clearCookie("role", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "Strict" });
+        res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "None" });
+        res.clearCookie("role", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "None" });
 
         return res.status(200).json({ success: "User logged out successfully" });
     } catch (error) {
