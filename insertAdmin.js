@@ -13,25 +13,23 @@ async function insertAdmin() {
         // Check if an admin already exists (to prevent duplicates)
         const existingAdmin = await Person.findOne({ email: "marvelavengersharsha@gmail.com" });
         if (existingAdmin) {
+            console.log( await argon2.verify(existingAdmin.password , "23082004"));
             console.log("Admin already exists. Skipping insertion.");
             return;
         }
 
-        // Hash the password before inserting
-        const hashedPassword = await argon2.hash("23082004");
-
         // Create the admin user
         const adminUser = new Person({
-            firstName,
-            lastName ,
-            email ,
-            password , // Store hashed password
-            rollNo ,
-            phone,
-            address ,
-            role ,
-            rfid ,
-            dob 
+            firstName:"Sree Harsha",
+            lastName:"Munimadugu",
+            email:"marvelavengersharsha@gmail.com",
+            password: "23082004" , // Store hashed password
+            rollNo:"1" ,
+            phone:"8106978379",
+            address:"Krishhna nagar , Kurnool , Andhra Pradesh" ,
+            role:"admin" ,
+            rfid:"123" ,
+            dob: new Date("2004-08-23"),  // YYYY-MM-DD format
         });
 
         await adminUser.save();
