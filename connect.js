@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const makeConnection = async ( name) => {
-    return await mongoose.connect(`mongodb://127.0.0.1:27017/${name}?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.2.15`)
+    return await mongoose.connect(`mongodb+srv://marvelavengersharsha:${process.env.db_password}@cluster0.xv2jk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/${name}`);
 }
 
 module.exports = {
