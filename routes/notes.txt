@@ -1,0 +1,150 @@
+/// middleware
+const activeRFIDScans = new Map(); // Store active scans
+
+const rfidMiddleware = (req, res, next) => {
+    const { rfid } = req.body;
+
+    if (!rfid) {
+        return res.status(400).json({ error: "RFID is required" });
+    }
+
+    // Store the RFID scan in memory (for real-time display)
+    activeRFIDScans.set(rfid, { rfid, timestamp: Date.now() });
+
+    // Proceed to the next middleware (for payments, access, etc.)
+    next();
+};
+
+// Function to get all scanned RFIDs (for frontend display)
+const getActiveRFIDs = () => {
+    return Array.from(activeRFIDScans.values());
+};
+
+// Function to clear RFID from active list after processing
+const clearRFID = (rfid) => {
+    activeRFIDScans.delete(rfid);
+};
+
+module.exports = { rfidMiddleware, getActiveRFIDs, clearRFID };
+
+
+
+
+
+
+
+
+///// in index file
+
+const { Server } = require("socket.io");
+const { rfidMiddleware, getActiveRFIDs, clearRFID } = require("./middlewares/rfidMiddleware");
+const app = express();
+const server = http.createServer(app); // Create an HTTP server
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+    },
+});
+
+io.on("connection", (socket) => {
+    console.log("Client connected");
+
+    // Send all active RFID scans to frontend
+    socket.emit("updateRFIDs", getActiveRFIDs());
+
+    // When an RFID is scanned, notify all staff computers
+    socket.on("rfidScan", (rfid) => {
+        console.log("RFID Scanned:", rfid);
+        io.emit("updateRFIDs", getActiveRFIDs());
+    });
+
+    // When a staff member selects an RFID to process
+    socket.on("processRFID", (rfid) => {
+        if (getActiveRFIDs().some((entry) => entry.rfid === rfid)) {
+            clearRFID(rfid); // Remove from active list
+            io.emit("updateRFIDs", getActiveRFIDs()); // Update frontend
+        }
+    });
+});
+
+// Middleware to log scanned RFIDs
+app.use(rfidMiddleware);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////// frontend
+
+import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3000"); // Adjust backend URL if needed
+
+const RFIDScanner = () => {
+    const [rfidList, setRfidList] = useState([]);
+    const [selectedRFID, setSelectedRFID] = useState(null);
+
+    useEffect(() => {
+        // Listen for updates from the server
+        socket.on("updateRFIDs", (rfidList) => {
+            console.log("Scanned RFIDs:", rfidList);
+            setRfidList(rfidList);
+        });
+
+        // Cleanup on component unmount
+        return () => {
+            socket.off("updateRFIDs");
+        };
+    }, []);
+
+    // Function to select an RFID for processing
+    const selectRFID = (rfid) => {
+        console.log("Processing RFID:", rfid);
+        setSelectedRFID(rfid);
+        socket.emit("processRFID", rfid);
+    };
+
+    return (
+        <div>
+            <h2>RFID Scanner</h2>
+            <ul>
+                {rfidList.map(({ rfid }) => (
+                    <li key={rfid} onClick={() => selectRFID(rfid)} style={{ cursor: "pointer" }}>
+                        RFID: {rfid}
+                    </li>
+                ))}
+            </ul>
+
+            {selectedRFID && <p><strong>Processing RFID:</strong> {selectedRFID}</p>}
+        </div>
+    );
+};
+
+export default RFIDScanner;
