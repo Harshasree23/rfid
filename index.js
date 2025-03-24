@@ -10,6 +10,10 @@ const { Server } = require("socket.io");
 const http = require("http");
 
 
+// for attendance daily
+require("./cronJobs"); // Ensures the cron job runs daily
+
+
 // creating an app
 const app = express();
 
@@ -17,10 +21,18 @@ const app = express();
 makeConnection("rfid").then( () => console.log("Connected to database") );
 
 // middlewares
+const allowedOrigins = ["https://your-vercel-app.vercel.app"];
+
 app.use(cors({
-    origin: "http://localhost:3001",  // Explicit frontend URL
-    credentials: true  // Allow cookies & auth headers
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    }
 }));
+
 app.use( express.json() );
 app.use( express.urlencoded({ extended : false  }) );
 app.use( cookieParser() );
