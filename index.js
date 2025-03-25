@@ -21,18 +21,22 @@ const app = express();
 makeConnection("rfid").then( () => console.log("Connected to database") );
 
 // middlewares
-const allowedOrigins = ["https://rfid-frontend-gold.vercel.app" , "http://localhost:3000/"];
+
+const allowedOrigins = [
+    "https://rfid-frontend-gold.vercel.app",  // Deployed frontend
+    "http://localhost:3000"                   // Local development
+];
 
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true ,
+    origin: allowedOrigins,   // Let CORS handle it
+    credentials: true,        // Allows cookies/auth headers
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
 }));
+
+// Fix preflight CORS issues
+app.options("*", cors()); 
+
 
 app.use( express.json() );
 app.use( express.urlencoded({ extended : false  }) );
