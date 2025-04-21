@@ -27,32 +27,22 @@ const allowedOrigins = [
     "http://localhost:3000"                   // Local development
 ];
 
-const corsOptions = (req, res, next) => {
-    if (allowedOrigins.includes(req.get('Origin'))) {
-        // Web request from valid frontend origin
-        cors({
-            origin: allowedOrigins,  // Dynamically set the origin
-            credentials: true,           // Allow credentials for frontend
-            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
-        })(req, res, next);
-    } else if (!req.get('Origin')) {
-        // Handle requests from ESP8266 (without Origin header)
-        cors({
-            origin: "*",  // Allow all origins for ESP8266
-            credentials: false,  // No need for credentials for ESP8266
-            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allowedHeaders: ["Content-Type", "Authorization"]
-        })(req, res, next);
-    } else {
-        // Fallback in case the origin doesn't match allowed origins
-        res.status(403).send("Forbidden");
-    }
-};
+const strictCors = cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+});
 
-// Apply the CORS middleware globally for all routes
-app.use(corsOptions);
+const openCors = cors({
+    origin: "*",
+    credentials: false,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+});
 
+// Fix preflight CORS issues
+app.options("*", cors()); 
 
 
 app.use( express.json() );
@@ -78,8 +68,8 @@ require("./socket/socketHandler")(io);
 
 // routes
 const rfidRoutes = require("./routes/rfid")(io);
-app.use('/scan' , rfidRoutes);
-app.use('/' , baseRouter );
+app.use('/scan' ,openCors, rfidRoutes);
+app.use('/' ,strictCors, baseRouter );
 
 // port
 portfinder.basePort = 3000;
