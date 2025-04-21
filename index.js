@@ -28,20 +28,19 @@ const allowedOrigins = [
 ];
 
 const corsOptions = (req, res, next) => {
-    // Check if the request comes from a valid origin (frontend)
-    if (allowedOrigins.includes(req.origin)) {
+    if (allowedOrigins.includes(req.get('Origin'))) {
         // Web request from valid frontend origin
         cors({
-            origin: req.origin,
-            credentials: true,  // Allow credentials for frontend
+            origin: allowedOrigins,  // Dynamically set the origin
+            credentials: true,           // Allow credentials for frontend
             methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
         })(req, res, next);
-    } else if (!req.origin) {
+    } else if (!req.get('Origin')) {
         // Handle requests from ESP8266 (without Origin header)
         cors({
             origin: "*",  // Allow all origins for ESP8266
-            credentials: false,  // Don't need credentials for ESP8266
+            credentials: false,  // No need for credentials for ESP8266
             methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allowedHeaders: ["Content-Type", "Authorization"]
         })(req, res, next);
@@ -53,6 +52,7 @@ const corsOptions = (req, res, next) => {
 
 // Apply the CORS middleware globally for all routes
 app.use(corsOptions);
+
 
 
 app.use( express.json() );
