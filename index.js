@@ -27,12 +27,31 @@ const allowedOrigins = [
     "http://localhost:3000"                   // Local development
 ];
 
-app.use(cors({
-    origin: allowedOrigins,   // Let CORS handle it
-    credentials: true,        // Allows cookies/auth headers
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+app.use(cors((req, res, next) => {
+    // Check if the request is from a trusted origin (your frontend)
+    if (allowedOrigins.includes(req.origin)) {
+        return cors({
+            origin: req.origin,
+            credentials: true,
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+        })(req, res, next);
+    }
+
+    // For ESP module (no `Origin` header), allow all origins
+    if (!req.origin) {
+        return cors({
+            origin: "*",  // Allow all origins for ESP
+            credentials: false,  // You can disable credentials for ESP if needed
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Content-Type", "Authorization"]
+        })(req, res, next);
+    }
+
+    // Fallback: Deny if the origin is not allowed
+    res.status(403).send("Forbidden");
 }));
+
 
 // Fix preflight CORS issues
 app.options("*", cors()); 
