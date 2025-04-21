@@ -27,30 +27,32 @@ const allowedOrigins = [
     "http://localhost:3000"                   // Local development
 ];
 
-app.use(cors((req, res, next) => {
-    // Check if the request is from a trusted origin (your frontend)
+const corsOptions = (req, res, next) => {
+    // Check if the request comes from a valid origin (frontend)
     if (allowedOrigins.includes(req.origin)) {
-        return cors({
+        // Web request from valid frontend origin
+        cors({
             origin: req.origin,
-            credentials: true,
+            credentials: true,  // Allow credentials for frontend
             methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
         })(req, res, next);
-    }
-
-    // For ESP module (no `Origin` header), allow all origins
-    if (!req.origin) {
-        return cors({
-            origin: "*",  // Allow all origins for ESP
-            credentials: false,  // You can disable credentials for ESP if needed
+    } else if (!req.origin) {
+        // Handle requests from ESP8266 (without Origin header)
+        cors({
+            origin: "*",  // Allow all origins for ESP8266
+            credentials: false,  // Don't need credentials for ESP8266
             methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allowedHeaders: ["Content-Type", "Authorization"]
         })(req, res, next);
+    } else {
+        // Fallback in case the origin doesn't match allowed origins
+        res.status(403).send("Forbidden");
     }
+};
 
-    // Fallback: Deny if the origin is not allowed
-    res.status(403).send("Forbidden");
-}));
+// Apply the CORS middleware globally for all routes
+app.use(corsOptions);
 
 
 // Fix preflight CORS issues
