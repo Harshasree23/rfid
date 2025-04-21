@@ -23,7 +23,7 @@ module.exports =  (io) => {
         // Emit updated RFID list to all connected clients
         io.emit("updateRFIDs", getActiveRFIDs());
 
-        return res.json({ message: "RFID scanned successfully", rfid });
+        return res.status(200).json({ message: "RFID scanned successfully", rfid });
     });
 
     return router;
