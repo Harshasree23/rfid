@@ -9,6 +9,7 @@ module.exports =  (io) => {
     router.post("/rfid", async (req, res) => {
         const { rfid } = req.body;
 
+        console.log(rfid);
         if (!rfid) {
             return res.status(400).json({ error: "RFID is required" });
         }
