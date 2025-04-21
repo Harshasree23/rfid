@@ -42,7 +42,7 @@ const openCors = cors({
 });
 
 // Fix preflight CORS issues
-app.options("*", cors()); 
+app.options("*", strictCors); 
 
 
 app.use( express.json() );
