@@ -32,7 +32,10 @@ accessRouter.post("/", async (req, res) => {
 
 accessRouter.get("/" , async(req,res) => {
     try{
-        const details = await Access.find({});
+        const details = await Access.find({})
+        .populate("accessedBy", "firstName lastName")  // This will populate firstName and lastName
+        .exec();  // .exec() to ensure the query is executed
+
         res.status(200).json(details);
     }
     catch(err)
