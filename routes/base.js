@@ -8,6 +8,7 @@ const { autologin } = require("../controllers/login");
 const { getId } = require("../services/getId");
 const authMiddleware = require("../middleware/authenticate");
 const { sendMail } = require("../services/sendMail");
+const accessRouter = require("./access");
 
 const baseRouter = express.Router();
 
@@ -27,6 +28,7 @@ baseRouter.use('/send-mail' , sendMail);
 
 baseRouter.use('/attendance' , attendaceRouter);
 
+baseRouter.use('/access', accessRouter );
 
 module.exports = {
     baseRouter,
